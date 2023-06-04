@@ -6,7 +6,9 @@ from BstagePostType import PostType
 from flask import Flask, request, send_file
 
 app = Flask(__name__)
-media_base_url = "https://pixy.fxbstage.in/story/feed/"
+media_base_url = os.getenv("MEDIA_BASE_URL")
+if media_base_url is None:
+    media_base_url = "https://pixy.fxbstage.in/story/feed/"
 base_download_path = os.getenv('DOWNLOAD_PATH')
 if base_download_path is None:
     base_download_path = ""
