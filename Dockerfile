@@ -1,9 +1,9 @@
 FROM python:3.9
 
-RUN apt update
-RUN apt install -y ffmpeg
+RUN apt-get update
+RUN apt-get install -y ffmpeg
 
-RUN pip install requests flask yt-dlp
+RUN pip install -y requests flask yt-dlp
 
 ADD src /src
 

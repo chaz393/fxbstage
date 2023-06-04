@@ -148,7 +148,7 @@ def get_html(post: BstagePost):
         html = html + "<meta name=\"twitter:card\" content=\"player\" />"
         html = html + "<meta name=\"twitter:player:width\" content=\"320\" />"
         html = html + "<meta name=\"twitter:player:height\" content=\"180\" />"
-        html = html + f"<meta name=\"twitter:player:stream\" content=\"{media_base_url}/story/feed/" \
+        html = html + f"<meta name=\"twitter:player:stream\" content=\"{media_base_url}" \
                       f"{post.post_id}/{post.media_ids[0]}.mp4\" />"
         html = html + "<meta name=\"twitter:player:stream:content_type\" content=\"video/mp4\" />"
         return html
