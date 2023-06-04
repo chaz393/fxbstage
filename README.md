@@ -1,2 +1,2 @@
 # fxbstage
-Create better embed for pixy bstage
+Create better embeds for pixy bstage
