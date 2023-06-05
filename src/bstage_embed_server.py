@@ -11,7 +11,7 @@ from flask import Flask, request, send_file
 app = Flask(__name__)
 media_base_url = os.getenv("MEDIA_BASE_URL")
 if media_base_url is None:
-    media_base_url = "https://pixy.fxbstage.in/story/feed/"
+    media_base_url = "https://{artist}.fxbstage.in/story/feed/"
 base_download_path = os.getenv('DOWNLOAD_PATH')
 if base_download_path is None:
     base_download_path = ""
@@ -19,15 +19,18 @@ if base_download_path is None:
 
 @app.route('/')
 def index():
-    return "<meta http-equiv=\"Refresh\" content=\"0; url='https://pixy.bstage.in/'\" />"
+    host = request.host.split(":")[0]
+    artist = host.split(".")[-2]
+    return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/'\" />"
 
 
 @app.route('/story/feed/<post_id>')
 def get_post(post_id: str):
     host = request.host.split(":")[0]
+    artist = host.split(".")[-2]
     print(host)
     print(post_id)
-    post_url = f"https://pixy.bstage.in/story/feed/{post_id}"
+    post_url = f"https://{artist}.bstage.in/story/feed/{post_id}"
     response = requests.get(post_url)
     post_type = get_post_type(response)
     if post_type is PostType.PhotoPost:
@@ -47,7 +50,7 @@ def get_post(post_id: str):
         elif post.post_type is PostType.VideoPost:
             return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.mp4", as_attachment=True)
     else:
-        return get_html(post)
+        return get_html(post, artist)
 
 
 @app.route('/story/feed/<post_id>/<media>')
@@ -143,26 +146,26 @@ def get_post_type(response):
         return PostType.TextPost
 
 
-def get_html(post: BstagePost):
+def get_html(post: BstagePost, artist: str):
     if post.post_type is PostType.PhotoPost:
-        html = f"<meta http-equiv=\"Refresh\" content=\"0; url='https://pixy.bstage.in/story/feed/{post.post_id}'\" />"
-        html = html + "<title>Pixy bstage Post</title>"
-        html = html + f"<meta content=\"Pixy bstage Post by {post.author}\" property=\"og:title\" />"
+        html = f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/story/feed/{post.post_id}'\" />"
+        html = html + f"<title>{artist} bstage Post</title>"
+        html = html + f"<meta content=\"{artist} bstage Post by {post.author}\" property=\"og:title\" />"
         html = html + f"<meta content=\"{post.post_text}\" property=\"og:description\" />"
-        html = html + f"<meta content=\"https://pixy.bstage.in/story/feed/{post.post_id}\" property=\"og:url\" />"
-        html = html + f"<meta content=\"{media_base_url}/{post.post_id}/{post.media_ids[0]}.jpeg\" " \
+        html = html + f"<meta content=\"https://{artist}.bstage.in/story/feed/{post.post_id}\" property=\"og:url\" />"
+        html = html + f"<meta content=\"{media_base_url.format(artist=artist)}/{post.post_id}/{post.media_ids[0]}.jpeg\" " \
                       f"property=\"og:image\" />"
         html = html + "<meta name=\"twitter:card\" content=\"summary_large_image\">"
         return html
     elif post.post_type is PostType.VideoPost:
-        html = f"<meta http-equiv=\"Refresh\" content=\"0; url='https://pixy.bstage.in/story/feed/{post.post_id}'\" />"
-        html = html + "<title>Pixy bstage Post</title>"
+        html = f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/story/feed/{post.post_id}'\" />"
+        html = html + f"<title>{artist} bstage Post</title>"
         html = html + f"<meta name=\"twitter:description\" content=\"{post.post_text}\" />"
-        html = html + f"<meta name=\"twitter:title\" content=\"Pixy bstage Post by {post.author}\" />"
+        html = html + f"<meta name=\"twitter:title\" content=\"{artist} bstage Post by {post.author}\" />"
         html = html + "<meta name=\"twitter:card\" content=\"player\" />"
         html = html + "<meta name=\"twitter:player:width\" content=\"320\" />"
         html = html + "<meta name=\"twitter:player:height\" content=\"180\" />"
-        html = html + f"<meta name=\"twitter:player:stream\" content=\"{media_base_url}" \
+        html = html + f"<meta name=\"twitter:player:stream\" content=\"{media_base_url.format(artist=artist)}" \
                       f"{post.post_id}/{post.media_ids[0]}.mp4\" />"
         html = html + "<meta name=\"twitter:player:stream:content_type\" content=\"video/mp4\" />"
         return html
