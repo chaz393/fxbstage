@@ -20,7 +20,7 @@ if base_download_path is None:
 @app.route('/')
 def index():
     host = request.host.split(":")[0]
-    artist = host.split(".")[-2]
+    artist = host.split(".")[0]
     print(artist)
     return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/'\" />"
 
@@ -28,7 +28,7 @@ def index():
 @app.route('/story/feed/<post_id>')
 def get_post(post_id: str):
     host = request.host.split(":")[0]
-    artist = host.split(".")[-2]
+    artist = host.split(".")[0]
     print(artist)
     print(host)
     print(post_id)
