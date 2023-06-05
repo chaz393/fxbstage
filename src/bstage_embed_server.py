@@ -28,6 +28,7 @@ def index():
 def get_post(post_id: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[-2]
+    print(artist)
     print(host)
     print(post_id)
     post_url = f"https://{artist}.bstage.in/story/feed/{post_id}"
