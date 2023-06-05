@@ -41,7 +41,7 @@ def get_post(post_id: str):
         return ""
     if "dlbstage.in" in host:
         if len(post.media_ids) > 1:
-            return send_file(zip_and_get_stream(post_id), as_attachment=True, download_name="archive.zip")
+            return send_file(zip_and_get_stream(post_id), as_attachment=True, download_name=f"{post_id}.zip")
         elif post.post_type is PostType.PhotoPost:
             return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.jpeg", as_attachment=True)
         elif post.post_type is PostType.VideoPost:
