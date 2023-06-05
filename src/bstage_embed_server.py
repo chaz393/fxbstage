@@ -21,6 +21,7 @@ if base_download_path is None:
 def index():
     host = request.host.split(":")[0]
     artist = host.split(".")[-2]
+    print(artist)
     return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/'\" />"
 
 
