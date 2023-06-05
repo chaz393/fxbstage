@@ -1,6 +1,9 @@
 import requests
 import os
 import subprocess
+from glob import glob
+from io import BytesIO
+from zipfile import ZipFile
 from BstagePost import BstagePost
 from BstagePostType import PostType
 from flask import Flask, request, send_file
@@ -21,7 +24,8 @@ def index():
 
 @app.route('/story/feed/<post_id>')
 def get_post(post_id: str):
-    print(request.host.split(":")[0])
+    host = request.host.split(":")[0]
+    print(host)
     print(post_id)
     post_url = f"https://pixy.bstage.in/story/feed/{post_id}"
     response = requests.get(post_url)
@@ -35,7 +39,15 @@ def get_post(post_id: str):
     else:
         # either errored or a text post
         return ""
-    return get_html(post)
+    if "dlbstage.in" in host:
+        if len(post.media_ids) > 1:
+            return send_file(zip_and_get_stream(post_id), as_attachment=True, download_name="archive.zip")
+        elif post.post_type is PostType.PhotoPost:
+            return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.jpeg", as_attachment=True)
+        elif post.post_type is PostType.VideoPost:
+            return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.mp4", as_attachment=True)
+    else:
+        return get_html(post)
 
 
 @app.route('/story/feed/<post_id>/<media>')
@@ -154,6 +166,15 @@ def get_html(post: BstagePost):
                       f"{post.post_id}/{post.media_ids[0]}.mp4\" />"
         html = html + "<meta name=\"twitter:player:stream:content_type\" content=\"video/mp4\" />"
         return html
+
+
+def zip_and_get_stream(post_id: str):
+    stream = BytesIO()
+    with ZipFile(stream, 'w') as zf:
+        for file in glob(os.path.join(f"{base_download_path}downloads/{post_id}", '*')):
+            zf.write(file, os.path.basename(file))
+    stream.seek(0)
+    return stream
 
 
 if __name__ == "__main__":
