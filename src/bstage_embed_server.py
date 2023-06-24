@@ -6,7 +6,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from BstagePost import BstagePost
 from BstagePostType import PostType
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, Response
 
 app = Flask(__name__)
 media_base_url = os.getenv("MEDIA_BASE_URL")
@@ -33,7 +33,12 @@ def get_post(post_id: str):
     print(f"artist ${artist}")
     print(f"host: ${host}")
     print(f"postId: ${post_id}")
-    download_post(post_id, artist, host)
+    post = download_and_get_post(post_id, artist, host)
+    if "dlbstage.in" in host or "dlstagingbstage" in host:
+        if post is None:
+            return Response("Post errored or is a text post", status=500)
+        else:
+            return get_dl_bstage_response(post)
     return get_embed(post_id, artist)
 
 
@@ -48,7 +53,7 @@ def get_media(post_id: str, media: str):
     print(media)
     media_path = f"{base_download_path}downloads/{post_id}/{media}"
     print(media_path)
-    download_post(post_id, artist, host)
+    download_and_get_post(post_id, artist, host)  # ignore return, we don't care about that here
     return send_file(media_path)
 
 
@@ -67,30 +72,21 @@ def get_embed(post_id: str, artist: str):
         return ""
 
 
-def download_post(post_id: str, artist: str, host: str):
+def download_and_get_post(post_id: str, artist: str, host: str):
     post_url = f"https://{artist}.bstage.in/story/feed/{post_id}"
     response = requests.get(post_url)
     post_type = get_post_type(response)
     if post_type is PostType.PhotoPost:
         post = get_photo_post_metadata(response)
         download_photo(post)
+        return post
     elif post_type is PostType.VideoPost:
         post = get_video_post_metadata(response)
         download_video(post)
+        return post
     else:
         # either errored or a text post
-        return ""
-    if "dlbstage.in" in host or "dlstagingbstage" in host:
-        if len(post.media_ids) > 1:
-            return send_file(zip_and_get_stream(post_id), as_attachment=True, download_name=f"{post_id}.zip")
-        elif post.post_type is PostType.PhotoPost:
-            return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.jpeg",
-                             as_attachment=True)
-        elif post.post_type is PostType.VideoPost:
-            return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.mp4",
-                             as_attachment=True)
-    else:
-        return get_html(post, artist)
+        return None
 
 
 @app.route('/story/feed/<post_id>/<media>')
@@ -100,6 +96,17 @@ def get_media(post_id: str, media: str):
     media_path = f"{base_download_path}downloads/{post_id}/{media}"
     print(media_path)
     return send_file(media_path)
+
+
+def get_dl_bstage_response(post: BstagePost):
+    if len(post.media_ids) > 1:
+        return send_file(zip_and_get_stream(post.post_id), as_attachment=True, download_name=f"{post.post_id}.zip")
+    elif post.post_type is PostType.PhotoPost:
+        return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.jpeg",
+                         as_attachment=True)
+    elif post.post_type is PostType.VideoPost:
+        return send_file(f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.mp4",
+                         as_attachment=True)
 
 
 def download_photo(post: BstagePost):
