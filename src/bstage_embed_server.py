@@ -44,7 +44,7 @@ def get_post(post_id: str):
     else:
         # either errored or a text post
         return ""
-    if "dlbstage.in" in host:
+    if "dlbstage.in" in host or "dlstagingbstage" in host:
         if len(post.media_ids) > 1:
             return send_file(zip_and_get_stream(post_id), as_attachment=True, download_name=f"{post_id}.zip")
         elif post.post_type is PostType.PhotoPost:
