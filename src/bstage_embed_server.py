@@ -26,6 +26,7 @@ def index():
 
 
 @app.route('/story/feed/<post_id>')
+@app.route('/story/feed/<post_id>/')
 def get_post(post_id: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
@@ -37,6 +38,7 @@ def get_post(post_id: str):
 
 
 @app.route('/story/feed/<post_id>/<media>')
+@app.route('/story/feed/<post_id>/<media>/')
 def get_media(post_id: str, media: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
