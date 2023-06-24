@@ -6,7 +6,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from BstagePost import BstagePost
 from BstagePostType import PostType
-from flask import Flask, request, send_file, Response
+from flask import Flask, request, send_file
 
 app = Flask(__name__)
 media_base_url = os.getenv("MEDIA_BASE_URL")
