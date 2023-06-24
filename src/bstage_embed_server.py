@@ -18,7 +18,7 @@ if base_download_path is None:
 
 
 @app.route('/')
-def index():
+def index_route():
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
     print(f"redirecting to artist: ${artist}")
@@ -27,24 +27,24 @@ def index():
 
 @app.route('/story/feed/<post_id>')
 @app.route('/story/feed/<post_id>/')
-def get_post(post_id: str):
+def get_post_route(post_id: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
     print(f"artist ${artist}")
     print(f"host: ${host}")
     print(f"postId: ${post_id}")
-    post = download_and_get_post(post_id, artist, host)
+    post = get_post(post_id, artist)
+    if post is None:  # post is either a text post or something errored
+        return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/story/feed/{post_id}'\" />"
+    download_post(post)
     if "dlbstage.in" in host or "dlstagingbstage" in host:
-        if post is None:
-            return Response("Post errored or is a text post", status=500)
-        else:
-            return get_dl_bstage_response(post)
-    return get_embed(post_id, artist)
+        return get_dl_bstage_file(post)
+    return get_html(post, artist)
 
 
 @app.route('/story/feed/<post_id>/<media>')
 @app.route('/story/feed/<post_id>/<media>/')
-def get_media(post_id: str, media: str):
+def get_media_route(post_id: str, media: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
     print(f"artist ${artist}")
@@ -53,36 +53,27 @@ def get_media(post_id: str, media: str):
     print(media)
     media_path = f"{base_download_path}downloads/{post_id}/{media}"
     print(media_path)
-    download_and_get_post(post_id, artist, host)  # ignore return, we don't care about that here
+    post = get_post(post_id, artist)
+    download_post(post)  # ignore return, we don't care about that here
     return send_file(media_path)
 
 
-def get_embed(post_id: str, artist: str):
-    post_url = f"https://${artist}.bstage.in/story/feed/{post_id}"
-    response = requests.get(post_url)
-    post_type = get_post_type(response)
-    if post_type is PostType.PhotoPost:
-        post = get_photo_post_metadata(response)
-        return get_html(post, artist)
-    elif post_type is PostType.VideoPost:
-        post = get_video_post_metadata(response)
-        return get_html(post, artist)
-    else:
-        # either errored or a text post
-        return ""
+def download_post(post: BstagePost):
+    if post.post_type is PostType.PhotoPost:
+        download_photo(post)
+    elif post.post_type is PostType.VideoPost:
+        download_video(post)
 
 
-def download_and_get_post(post_id: str, artist: str, host: str):
+def get_post(post_id: str, artist: str):
     post_url = f"https://{artist}.bstage.in/story/feed/{post_id}"
     response = requests.get(post_url)
     post_type = get_post_type(response)
     if post_type is PostType.PhotoPost:
         post = get_photo_post_metadata(response)
-        download_photo(post)
         return post
     elif post_type is PostType.VideoPost:
         post = get_video_post_metadata(response)
-        download_video(post)
         return post
     else:
         # either errored or a text post
@@ -98,7 +89,7 @@ def get_media(post_id: str, media: str):
     return send_file(media_path)
 
 
-def get_dl_bstage_response(post: BstagePost):
+def get_dl_bstage_file(post: BstagePost):
     if len(post.media_ids) > 1:
         return send_file(zip_and_get_stream(post.post_id), as_attachment=True, download_name=f"{post.post_id}.zip")
     elif post.post_type is PostType.PhotoPost:
