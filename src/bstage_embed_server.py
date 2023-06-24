@@ -21,7 +21,7 @@ if base_download_path is None:
 def index_route():
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
-    print(f"redirecting to artist: {artist}")
+    print(f"redirecting to https://{artist}.bstage.in/")
     return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/'\" />"
 
 
@@ -30,9 +30,6 @@ def index_route():
 def get_post_route(post_id: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
-    print(f"artist {artist}")
-    print(f"host: {host}")
-    print(f"postId: {post_id}")
     post = get_post(post_id, artist)
     if post is None:  # post is either a text post or something errored
         return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/story/feed/{post_id}'\" />"
@@ -47,12 +44,7 @@ def get_post_route(post_id: str):
 def get_media_route(post_id: str, media: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
-    print(f"artist {artist}")
-    print(f"host: {host}")
-    print(f"postId: {post_id}")
-    print(media)
     media_path = f"{base_download_path}downloads/{post_id}/{media}"
-    print(media_path)
     post = get_post(post_id, artist)
     download_post(post)  # ignore return, we don't care about that here
     return send_file(media_path)
@@ -78,15 +70,6 @@ def get_post(post_id: str, artist: str):
     else:
         # either errored or a text post
         return None
-
-
-@app.route('/story/feed/<post_id>/<media>')
-def get_media(post_id: str, media: str):
-    print(post_id)
-    print(media)
-    media_path = f"{base_download_path}downloads/{post_id}/{media}"
-    print(media_path)
-    return send_file(media_path)
 
 
 def get_dl_bstage_file(post: BstagePost):
@@ -119,7 +102,6 @@ def download_photo(post: BstagePost):
 
 def download_video(post: BstagePost):
     full_path = f"{base_download_path}downloads/{post.post_id}/{post.media_ids[0]}.mp4"
-    print(full_path)
     if os.path.isfile(full_path):
         print(f"{full_path} already exists, skipping download")
     else:
@@ -133,9 +115,6 @@ def get_photo_post_metadata(response):
     post_id = str(response.text).split("\"post\":{\"id\":\"")[1].split("\"")[0]
     author = str(response.text).split("\"nickname\":\"")[1].split("\"")[0]
     post_text = str(response.text).split("\"body\":\"")[1].split("\"")[0]
-    print(post_id)
-    print(author)
-    print(post_text)
 
     media_ids = []
     image_url_dictionary = {}
@@ -143,8 +122,6 @@ def get_photo_post_metadata(response):
     for image_url in image_urls.split(","):
         image_url = image_url.split("\"")[1]
         media_id = image_url.split("/")[-2]
-        print(image_url)
-        print(media_id)
         media_ids.append(media_id)
         image_url_dictionary[media_id] = image_url
 
@@ -161,12 +138,6 @@ def get_video_post_metadata(response):
     post_text = str(response.text).split("\"body\":\"")[1].split("\"")[0]
     video_url = str(response.text).split("\"dashPath\":\"")[1].split("\"")[0]
 
-    print(post_id)
-    print(media_id)
-    print(author)
-    print(post_text)
-    print(video_url)
-
     return BstagePost(PostType.VideoPost, post_id, post_text, [media_id], author, video_url=video_url)
 
 
@@ -174,10 +145,8 @@ def get_post_type(response):
     if response.status_code != 200:
         return
     if "\"video\":{\"id\"" in str(response.content):
-        print("downloading video")
         return PostType.VideoPost
     elif "\"images\":[" in str(response.content):
-        print("downloading photo")
         return PostType.PhotoPost
     else:
         print("text post, skipping")
