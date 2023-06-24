@@ -21,7 +21,7 @@ if base_download_path is None:
 def index_route():
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
-    print(f"redirecting to artist: ${artist}")
+    print(f"redirecting to artist: {artist}")
     return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/'\" />"
 
 
@@ -30,9 +30,9 @@ def index_route():
 def get_post_route(post_id: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
-    print(f"artist ${artist}")
-    print(f"host: ${host}")
-    print(f"postId: ${post_id}")
+    print(f"artist {artist}")
+    print(f"host: {host}")
+    print(f"postId: {post_id}")
     post = get_post(post_id, artist)
     if post is None:  # post is either a text post or something errored
         return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/story/feed/{post_id}'\" />"
@@ -47,9 +47,9 @@ def get_post_route(post_id: str):
 def get_media_route(post_id: str, media: str):
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
-    print(f"artist ${artist}")
-    print(f"host: ${host}")
-    print(f"postId: ${post_id}")
+    print(f"artist {artist}")
+    print(f"host: {host}")
+    print(f"postId: {post_id}")
     print(media)
     media_path = f"{base_download_path}downloads/{post_id}/{media}"
     print(media_path)
