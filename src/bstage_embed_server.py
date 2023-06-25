@@ -29,6 +29,7 @@ def index_route():
 @app.route('/story/feed/<post_id>/')
 def get_post_route(post_id: str):
     host = request.host.split(":")[0]
+    print(host)
     artist = host.split(".")[0]
     post = get_post(post_id, artist)
     if post is None:  # post is either a text post or something errored
@@ -43,10 +44,11 @@ def get_post_route(post_id: str):
 @app.route('/story/feed/<post_id>/<media>/')
 def get_media_route(post_id: str, media: str):
     host = request.host.split(":")[0]
+    print(host)
     artist = host.split(".")[0]
     media_path = f"{base_download_path}downloads/{post_id}/{media}"
     post = get_post(post_id, artist)
-    download_post(post)  # ignore return, we don't care about that here
+    download_post(post)
     return send_file(media_path)
 
 
@@ -92,6 +94,7 @@ def download_photo(post: BstagePost):
         if os.path.isfile(full_path):
             print(f"{full_path} already exists, skipping download")
         else:
+            print(f"downloading photo: {full_path}")
             image_response = requests.get(image_url)
             if image_response.status_code != 200:
                 return
@@ -105,6 +108,7 @@ def download_video(post: BstagePost):
     if os.path.isfile(full_path):
         print(f"{full_path} already exists, skipping download")
     else:
+        print(f"downloading video: {full_path}")
         subprocess.run(["yt-dlp", "-o", full_path, post.video_url])
 
 
@@ -179,6 +183,7 @@ def get_html(post: BstagePost, artist: str):
 
 
 def zip_and_get_stream(post_id: str):
+    print(f"zipping {post_id} media for dl")
     stream = BytesIO()
     with ZipFile(stream, 'w') as zf:
         for file in glob(os.path.join(f"{base_download_path}downloads/{post_id}", '*')):
