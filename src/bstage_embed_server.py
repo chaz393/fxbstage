@@ -21,6 +21,11 @@ if base_download_path is None:
 def index_route():
     host = request.host.split(":")[0]
     artist = host.split(".")[0]
+    # handle redirecting to bstage.in where there is no artist
+    # ex: pixy.fxbstage.in = length 3, fxbstage.in = length 2
+    if len(host.split(".")) < 3:
+        print(f"redirecting to https://bstage.in/")
+        return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://bstage.in/'\" />"
     print(f"redirecting to https://{artist}.bstage.in/")
     return f"<meta http-equiv=\"Refresh\" content=\"0; url='https://{artist}.bstage.in/'\" />"
 
