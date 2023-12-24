@@ -124,6 +124,7 @@ def get_photo_post_metadata(response):
     post_id = str(response.text).split("\"post\":{\"id\":\"")[1].split("\"")[0]
     author = str(response.text).split("\"nickname\":\"")[1].split("\"")[0]
     post_text = str(response.text).split("\"body\":\"")[1].split("\"")[0]
+    post_text = post_text.replace("\n", "<br>")
 
     media_ids = []
     image_url_dictionary = {}
@@ -145,6 +146,7 @@ def get_video_post_metadata(response):
     media_id = str(response.text).split("\"video\":{\"id\":\"")[1].split("\"")[0]
     author = str(response.text).split("\"nickname\":\"")[1].split("\"")[0]
     post_text = str(response.text).split("\"body\":\"")[1].split("\"")[0]
+    post_text = post_text.replace("\n", "<br>")
     video_url = str(response.text).split("\"dashPath\":\"")[1].split("\"")[0]
 
     return BstagePost(PostType.VideoPost, post_id, post_text, [media_id], author, video_url=video_url)
