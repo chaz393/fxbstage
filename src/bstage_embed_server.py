@@ -11,7 +11,7 @@ from flask import Flask, request, send_file
 app = Flask(__name__)
 media_base_url = os.getenv("MEDIA_BASE_URL")
 if media_base_url is None:
-    media_base_url = "https://{artist}.fxbstage.in/story/feed/"
+    media_base_url = "https://{artist}.fxbstage.in/story/feed"
 base_download_path = os.getenv('DOWNLOAD_PATH')
 if base_download_path is None:
     base_download_path = ""
@@ -182,7 +182,7 @@ def get_html(post: BstagePost, artist: str):
         html = html + "<meta name=\"twitter:player:width\" content=\"320\" />"
         html = html + "<meta name=\"twitter:player:height\" content=\"180\" />"
         html = html + f"<meta name=\"twitter:player:stream\" content=\"{media_base_url.format(artist=artist)}" \
-                      f"{post.post_id}/{post.media_ids[0]}.mp4\" />"
+                      f"/{post.post_id}/{post.media_ids[0]}.mp4\" />"
         html = html + "<meta name=\"twitter:player:stream:content_type\" content=\"video/mp4\" />"
         return html
 
